@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>এডমিন প্যানেল</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        #login-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 80vh; text-align: center; }
+        #login-screen h1 { color: #333; }
+        #google-login-btn { background-color: #db4437; color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; }
+        #admin-content { display: none; }
+        header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 20px; position: relative; }
+        #logout-btn { position: absolute; top: 10px; right: 10px; padding: 8px 12px; border: none; border-radius: 8px; cursor: pointer; background-color: #db4437; color: white; }
+        .panel { background-color: #fff; padding: 20px; border-radius: 12px; margin-bottom: 30px; }
+        .panel input, .panel textarea { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; }
+        .panel button { width: 100%; padding: 12px; color: white; border: none; cursor: pointer; }
+        #add-project-form button { background-color: #28a745; }
+        #update-banner-form button { background-color: #007bff; }
+        #password-form button { background-color: #673ab7; }
+        #projects-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media (min-width: 768px) { #projects-container { grid-template-columns: repeat(2, 1fr); } }
+        .project-card { background-color: white; border-radius: 12px; overflow: hidden; }
+        .project-card img { width: 100%; height: 160px; object-fit: cover;}
+        .project-card-content { padding: 20px; }
+        .project-card a {display: block; width: 100%; padding: 12px; border-radius: 8px; text-align: center; text-decoration: none; margin-bottom: 10px; box-sizing: border-box; background-color: #e8f0fe; color: #1a73e8; font-weight: bold;}
+        .project-card button { background-color: #424242; color: white; border: none; cursor: pointer; font-size: 16px; width: 100%; padding: 12px; border-radius: 8px; }
+        .admin-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .admin-actions button { margin-bottom: 0; font-size: 14px; }
+        .edit-btn { background-color: #ffc107 !important; }
+        .delete-btn { background-color: #dc3545 !important; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .modal-content { background-color: #fefefe; padding: 25px; border-radius: 10px; width: 90%; max-width: 600px; position: relative; }
+        .close-button { position: absolute; top: 10px; right: 15px; font-size: 28px; cursor: pointer; }
+        #code-display-wrapper { background-color: #2b2b2b; border-radius: 8px; padding: 15px; max-height: 70vh; overflow-y: auto; }
+        pre[class*="language-"] { margin: 0; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <h1>এডমিন প্যানেল</h1>
+        <p>প্রবেশ করার জন্য গুগল দিয়ে লগইন করুন।</p>
+        <button id="google-login-btn">গুগল দিয়ে লগইন</button>
+    </div>
+    <div id="admin-content" class="container">
+        <header><h1>এডমিন ড্যাশবোর্ড</h1><button id="logout-btn">লগআউট</button></header>
+        <section id="banner-panel" class="panel">
+            <h2>স্লাইডার ব্যানার যোগ করুন</h2>
+            <form id="update-banner-form">
+                <input type="url" id="banner-url-1" placeholder="প্রথম ব্যানারের URL">
+                <input type="url" id="banner-url-2" placeholder="দ্বিতীয় ব্যানারের URL">
+                <input type="url" id="banner-url-3" placeholder="তৃতীয় ব্যানারের URL">
+                <!-- নতুন ৩টি ব্যানার ইনপুট -->
+                <input type="url" id="banner-url-4" placeholder="চতুর্থ ব্যানারের URL">
+                <input type="url" id="banner-url-5" placeholder="পঞ্চম ব্যানারের URL">
+                <input type="url" id="banner-url-6" placeholder="ষষ্ঠ ব্যানারের URL">
+                <button type="submit">ব্যানার সেভ করুন</button>
+            </form>
+        </section>
+        <section class="panel">
+            <h2>Personal</h2>
+            <form id="password-form">
+                <input type="text" id="personal-password-input" placeholder="নতুন পাসওয়ার্ড দিন">
+                <button type="submit">পাসওয়ার্ড সেভ করুন</button>
+            </form>
+        </section>
+        <section id="admin-panel" class="panel">
+            <h2 id="form-title">নতুন প্রজেক্ট যোগ করুন</h2>
+            <form id="add-project-form">
+                <input type="text" id="project-name" placeholder="প্রজেক্টের নাম" required><input type="url" id="image-url" placeholder="ছবির URL" required><input type="url" id="project-url" placeholder="লাইভ ওয়েবসাইটের URL" required>
+                <textarea id="project-code" rows="6" placeholder="সম্পূর্ণ কোড" required></textarea>
+                <button type="submit" id="submit-project-btn">প্রজেক্ট যোগ করুন</button>
+                <button type="button" id="cancel-edit-btn" style="display:none; background-color: #6c757d; margin-top: 10px;"> বাতিল করুন</button>
+            </form>
+        </section>
+        <main id="projects-container"><p id="loading-indicator">প্রজেক্ট লোড হচ্ছে...</p></main>
+    </div>
+    <div id="code-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="this.parentElement.parentElement.style.display='none'">&times;</span>
+            <h2 id="code-modal-title"></h2>
+            <div id="code-display-wrapper"><pre><code id="code-display" class="language-javascript"></code></pre></div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script>
+        const firebaseConfig={apiKey:"AIzaSyAgHISASBUxLzEPkDB-DD8x3HO2AlVZ0Vo",authDomain:"personal-d0610.firebaseapp.com",databaseURL:"https://personal-d0610-default-rtdb.firebaseio.com",projectId:"personal-d0610",storageBucket:"personal-d0610.appspot.com",messagingSenderId:"543875042192",appId:"1:543875042192:web:d48bad12444036845b0115",measurementId:"G-14W61BB1C4"};
+        const ADMIN_UID="re47veqhIjc9yJMVFzPEN3aoWdJ2";
+        firebase.initializeApp(firebaseConfig);
+        const db=firebase.firestore(),auth=firebase.auth();
+        const loginScreen=document.getElementById("login-screen"),adminContent=document.getElementById("admin-content"),projectsContainer=document.getElementById("projects-container"),addProjectForm=document.getElementById("add-project-form"),formTitle=document.getElementById("form-title"),submitBtn=document.getElementById("submit-project-btn"),cancelBtn=document.getElementById("cancel-edit-btn");
+        let isEditMode=!1,currentProjectId=null;
+        
+        auth.onAuthStateChanged(e=>{e&&e.uid===ADMIN_UID?(loginScreen.style.display="none",adminContent.style.display="block",fetchAndDisplayProjects(),loadCurrentBanners(),loadCurrentPassword()):(loginScreen.style.display="flex",adminContent.style.display="none")}),document.getElementById("google-login-btn").addEventListener("click",()=>auth.signInWithPopup(new firebase.auth.GoogleAuthProvider).catch(e=>console.error(e))),document.getElementById("logout-btn").addEventListener("click",()=>auth.signOut());
+        addProjectForm.addEventListener("submit",async e=>{e.preventDefault();const t={name:document.getElementById("project-name").value,imageUrl:document.getElementById("image-url").value,projectUrl:document.getElementById("project-url").value,code:document.getElementById("project-code").value};try{isEditMode?await db.collection("projects").doc(currentProjectId).update(t):await db.collection("projects").add(t),resetForm(),alert(isEditMode?"প্রজেক্ট আপডেট হয়েছে!":"প্রজেক্ট যোগ করা হয়েছে!"),fetchAndDisplayProjects()}catch(e){alert("ত্রুটি হয়েছে।")}});
+        projectsContainer.addEventListener("click",e=>{const t=e.target;t.classList.contains("view-code-btn")?showCodeForProject(t.dataset.id):t.classList.contains("edit-btn")?handleEdit(t.dataset.id):t.classList.contains("delete-btn")&&handleDelete(t.dataset.id)});
+        
+        // ৬টি ব্যানার URL সেভ করার জন্য আপডেট
+        document.getElementById("update-banner-form").addEventListener("submit",async e=>{e.preventDefault();const t=[document.getElementById("banner-url-1").value,document.getElementById("banner-url-2").value,document.getElementById("banner-url-3").value,document.getElementById("banner-url-4").value,document.getElementById("banner-url-5").value,document.getElementById("banner-url-6").value];try{await db.collection("settings").doc("config").set({bannerUrls:t},{merge:!0}),alert("ব্যানার সফলভাবে সেভ হয়েছে!")}catch(e){alert("ব্যানার সেভ করতে সমস্যা হয়েছে।")}});
+        
+        document.getElementById("password-form").addEventListener("submit",async e=>{e.preventDefault();const t=document.getElementById("personal-password-input").value;if(!t)return void alert("পাসওয়ার্ড খালি রাখা যাবে না।");try{await db.collection("settings").doc("config").set({personalPassword:t},{merge:!0}),alert("পাসওয়ার্ড সফলভাবে সেভ হয়েছে!")}catch(e){alert("পাসওয়ার্ড সেভ করতে সমস্যা হয়েছে।")}});
+        async function fetchAndDisplayProjects(){try{const e=await db.collection("projects").get();let t="";e.forEach(e=>{const o=e.data();t+=`\n<div class="project-card"><img src="${o.imageUrl}" alt="${o.name}"><div class="project-card-content"><h3>${o.name}</h3><a href="${o.projectUrl}" target="_blank">ওয়েবসাইট দেখুন</a><button class="view-code-btn" data-id="${e.id}">কোড দেখুন</button><div class="admin-actions"><button class="edit-btn" data-id="${e.id}">এডিট</button><button class="delete-btn" data-id="${e.id}">ডিলিট</button></div></div></div>`}),document.getElementById("loading-indicator").style.display="none",projectsContainer.innerHTML=t||"<p>এখনো কোনো প্রজেক্ট যোগ করা হয়নি।</p>"}catch(e){document.getElementById("loading-indicator").innerText="ত্রুটি হয়েছে।"}}
+        async function showCodeForProject(e){try{const t=await db.collection("projects").doc(e).get();if(t.exists){const e=document.getElementById("code-display");document.getElementById("code-modal-title").innerText=t.data().name+" এর কোড",e.textContent=t.data().code,Prism.highlightElement(e),document.getElementById("code-modal").style.display="flex"}}catch(e){alert("কোড পাওয়া যায়নি।")}}
+        async function handleEdit(e){try{const t=await db.collection("projects").doc(e).get();if(t.exists){const o=t.data();document.getElementById("project-name").value=o.name,document.getElementById("image-url").value=o.imageUrl,document.getElementById("project-url").value=o.projectUrl,document.getElementById("project-code").value=o.code,isEditMode=!0,currentProjectId=e,formTitle.innerText="প্রজেক্ট এডিট করুন",submitBtn.innerText="আপডেট করুন",cancelBtn.style.display="block",window.scrollTo(0,0)}}catch(e){alert("প্রজেক্ট লোড করা যায়নি।")}}
+        async function handleDelete(e){if(confirm("আপনি কি সত্যিই এই প্রজেক্টটি ডিলিট করতে চান?")){try{await db.collection("projects").doc(e).delete(),alert("প্রজেক্ট ডিলিট হয়েছে।"),fetchAndDisplayProjects()}catch(e){alert("ডিলিট করা যায়নি।")}}}
+        function resetForm(){addProjectForm.reset(),isEditMode=!1,currentProjectId=null,formTitle.innerText="নতুন প্রজেক্ট যোগ করুন",submitBtn.innerText="প্রজেক্ট যোগ করুন",cancelBtn.style.display="none"}
+        cancelBtn.addEventListener("click",resetForm);
+
+        // ৬টি ব্যানার URL লোড করার জন্য আপডেট
+        async function loadCurrentBanners(){try{const e=await db.collection("settings").doc("config").get();if(e.exists&&e.data().bannerUrls){const t=e.data().bannerUrls;document.getElementById("banner-url-1").value=t[0]||"",document.getElementById("banner-url-2").value=t[1]||"",document.getElementById("banner-url-3").value=t[2]||"",document.getElementById("banner-url-4").value=t[3]||"",document.getElementById("banner-url-5").value=t[4]||"",document.getElementById("banner-url-6").value=t[5]||""}}catch(e){console.error("আগের ব্যানার লোড করা যায়নি:",e)}}
+        
+        async function loadCurrentPassword(){try{const e=await db.collection("settings").doc("config").get();e.exists&&e.data().personalPassword&&(document.getElementById("personal-password-input").value=e.data().personalPassword)}catch(e){console.error("পাসওয়ার্ড লোড করা যায়নি:",e)}};
+    </script>
+</body>
+</html>
