@@ -34,6 +34,7 @@
 
     .episode-box { background: #252525; padding: 10px; border-radius: 6px; border: 1px solid #333; margin-bottom: 10px; }
     .episode-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .hint { font-size: 12px; color: #888; margin-top: 5px; line-height: 1.5; }
   </style>
 
   <!-- Firebase SDK -->
@@ -85,7 +86,7 @@
       return cleanUrl;
     }
 
-    // ⚡ সোশ্যাল মিডিয়া ভিডিও থেকে ১০০% অটো-থাম্বনেইল বের করার সিস্টেম
+    // ⚡ সোশ্যাল মিডিয়া ভিডিও থেকে ১০০% অটো-থাম্বনেইল বের করার সিস্টেম
     function generateAutoThumbnail(url) {
       if (!url) return 'https://via.placeholder.com/600x350/111111/FFFFFF?text=No+Cover+Image';
 
@@ -119,10 +120,12 @@
 
       // ৩. ফেসবুক ভিডিও অটো পোস্টার সার্ভিস
       if (cleanUrl.includes('facebook.com') || cleanUrl.includes('fb.watch')) {
-        return `https://graph.facebook.com/v12.0/videos?fields=picture&url=${encodeURIComponent(cleanUrl)}`;
+        const m = cleanUrl.match(/(?:videos\/(?:.*?\/)?|watch\/?\?v=|fb\.watch\/|[?&]v=)(\d{5,})/);
+        if (m && m[1]) return `https://graph.facebook.com/${m[1]}/picture?type=normal`;
+        return 'https://via.placeholder.com/600x350/111111/FFFFFF?text=Drama+Video';
       }
 
-      // ৪. ডিফল্ট ডার্ক ব্যাকগ্রাউন্ড কভার (যাতে সম্পূর্ণ কালো না হয়ে অ্যাপ লোগো/পোস্টার লুক দেখায়)
+      // ৪. ডিফল্ট ডার্ক ব্যাকগ্রাউন্ড কভার (যাতে সম্পূর্ণ কালো না হয়ে অ্যাপ লোগো/পোস্টার লুক দেখায়)
       return 'https://via.placeholder.com/600x350/111111/FFFFFF?text=Drama+Video';
     }
 
@@ -148,7 +151,7 @@
       try {
         await signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPass').value);
       } catch (err) {
-        document.getElementById('loginError').innerText = "লগইন ভুল হয়েছে: " + err.message;
+        document.getElementById('loginError').innerText = "লগইন ভুল হয়েছে: " + err.message;
       }
     });
     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
@@ -162,9 +165,9 @@
       try {
         await push(ref(db, 'categories'), { name: catName });
         document.getElementById('newCategoryName').value = "";
-        alert("ক্যাটাগরি যুক্ত হয়েছে!");
+        alert("ক্যাটাগরি যুক্ত হয়েছে!");
       } catch (err) {
-        alert("ক্যাটাগরি সেভ হয়নি: " + err.message);
+        alert("ক্যাটাগরি সেভ হয়নি: " + err.message);
       }
     });
 
@@ -197,7 +200,7 @@
           });
         } else {
           categorySelect.innerHTML = "<option value=''>কোনো ক্যাটাগরি নাই, তৈরি করুন</option>";
-          catList.innerHTML = "<p style='color:#aaa;'>কোনো ক্যাটাগরি তৈরি করা হয়নি</p>";
+          catList.innerHTML = "<p style='color:#aaa;'>কোনো ক্যাটাগরি তৈরি করা হয়নি</p>";
         }
       });
     }
@@ -206,7 +209,7 @@
       const newName = prompt("নতুন ক্যাটাগরির নাম লিখুন:", currentName);
       if (newName && newName.trim() !== "") {
         await update(ref(db, `categories/${key}`), { name: newName.trim() });
-        alert("ক্যাটাগরি আপডেট হয়েছে!");
+        alert("ক্যাটাগরি আপডেট হয়েছে!");
       }
     };
 
@@ -230,10 +233,10 @@
           linkUrl: linkUrl || '',
           createdAt: Date.now()
         });
-        alert("✅ ব্যানার যুক্ত হয়েছে!");
+        alert("✅ ব্যানার যুক্ত হয়েছে!");
         document.getElementById('bannerForm').reset();
       } catch (err) {
-        alert("ব্যানার সেভ হয়নি: " + err.message);
+        alert("ব্যানার সেভ হয়নি: " + err.message);
       }
     });
 
@@ -260,7 +263,7 @@
             bannerList.appendChild(div);
           });
         } else {
-          bannerList.innerHTML = "<p style='color:#aaa;'>কোনো ব্যানার যুক্ত করা হয়নি</p>";
+          bannerList.innerHTML = "<p style='color:#aaa;'>কোনো ব্যানার যুক্ত করা হয়নি</p>";
         }
       });
     }
@@ -276,7 +279,7 @@
         title: newTitle !== null ? newTitle.trim() : '',
         linkUrl: newLink !== null ? newLink.trim() : ''
       });
-      alert("ব্যানার আপডেট হয়েছে!");
+      alert("ব্যানার আপডেট হয়েছে!");
     };
 
     window.deleteBanner = async (key) => {
@@ -388,14 +391,14 @@
         if (videoAdUrl) payload.adUrl = videoAdUrl;
         
         await push(ref(db, targetNode), payload);
-        statusText.innerText = "✅ ভিডিও এবং কভার পিকচার সফলভাবে সেভ হয়েছে!";
+        statusText.innerText = "✅ ভিডিও এবং কভার পিকচার সফলভাবে সেভ হয়েছে!";
         document.getElementById('videoForm').reset();
         
         document.getElementById('episodesContainer').innerHTML = `
           <div class="episode-box" id="epBox_1">
             <div class="episode-header"><label style="color:#2ed573; font-weight:bold;">পর্ব ১</label></div>
             <input type="text" class="ep-title" placeholder="পর্বের নাম (যেমন: Episode 1)" value="Episode 1" style="margin-bottom:8px;">
-            <textarea class="ep-url" placeholder="সোশ্যাল মিডিয়ার ভিডিও URL বা iFrame দিন"></textarea>
+            <textarea class="ep-url" placeholder="সোশ্যাল মিডিয়ার ভিডিও URL দিন"></textarea>
           </div>
         `;
         episodeCount = 1;
@@ -470,7 +473,7 @@
       const path = isPremium ? `premiumVideos/${key}` : `videos/${key}`;
       if (confirm("আপনি কি নিশ্চিত এই ভিডিও সম্পূর্ণ ডিলিট করতে চান?")) {
         await remove(ref(db, path));
-        alert("ডিলিট হয়েছে!");
+        alert("ডিলিট হয়েছে!");
       }
     };
 
@@ -493,10 +496,10 @@
       }
 
       await update(ref(db, path), updateData);
-      alert("আপডেট হয়েছে!");
+      alert("আপডেট হয়েছে!");
     };
 
-    // ৭. প্রিমিয়াম রিকোয়েস্ট
+    // ৭. প্রিমিয়াম রিকোয়েস্ট
     function loadAccessRequests() {
       onValue(ref(db, 'accessRequests'), (snapshot) => {
         const reqList = document.getElementById('requestList');
@@ -536,7 +539,7 @@
     window.updateRequestStatus = async (userId, status) => {
       try {
         await update(ref(db, `accessRequests/${userId}`), { status: status });
-        alert(`পারমিশন ${status === 'approved' ? 'দেওয়া হয়েছে (Approved)' : 'বাতিল করা হয়েছে (Rejected)'}`);
+        alert(`পারমিশন ${status === 'approved' ? 'দেওয়া হয়েছে (Approved)' : 'বাতিল করা হয়েছে (Rejected)'}`);
       } catch (err) {
         alert("ত্রুটি: " + err.message);
       }
@@ -546,9 +549,9 @@
       if (confirm("আপনি কি নিশ্চিত এই রিকোয়েস্টটি মুছে ফেলতে চান?")) {
         try {
           await remove(ref(db, `accessRequests/${userId}`));
-          alert("রিকোয়েস্টটি ডিলিট হয়েছে!");
+          alert("রিকোয়েস্টটি ডিলিট হয়েছে!");
         } catch (err) {
-          alert("ডিলিট হতে সমস্যা হয়েছে: " + err.message);
+          alert("ডিলিট হতে সমস্যা হয়েছে: " + err.message);
         }
       }
     };
@@ -558,15 +561,16 @@
       e.preventDefault();
       try {
         await set(ref(db, 'settings/adConfig/adUrl'), document.getElementById('adUrl').value.trim());
+        // ✅ সংখ্যা হিসেবে সেভ হবে: 0 = স্ক্রিন ক্লিক এড বন্ধ, 10/15/20 = তত মিনিট পর পর
         await set(ref(db, 'settings/adConfig/adInterval'), document.getElementById('adInterval').value);
         await set(ref(db, 'settings/adConfig/popupAdCode'), document.getElementById('popupAdCode').value.trim());
         await set(ref(db, 'settings/adConfig/socialBarAdCode'), document.getElementById('socialBarAdCode').value.trim());
         await set(ref(db, 'settings/adConfig/nativeAdCode'), document.getElementById('nativeAdCode').value.trim());
         await set(ref(db, 'settings/adConfig/topBannerCode'), document.getElementById('topBannerCode').value.trim());
         await set(ref(db, 'settings/adConfig/bottomBannerCode'), document.getElementById('bottomBannerCode').value.trim());
-        alert("✅ Adsterra-এর সকল অ্যাড সেটিংস সেভ হয়েছে!");
+        alert("✅ Adsterra-এর সকল অ্যাড সেটিংস সেভ হয়েছে!");
       } catch (err) {
-        alert("সেভ হয়নি: " + err.message);
+        alert("সেভ হয়নি: " + err.message);
       }
     });
 
@@ -597,7 +601,7 @@
         <input type="email" id="loginEmail" required placeholder="admin@gmail.com">
       </div>
       <div class="form-group">
-        <label>পাসওয়ার্ড:</label>
+        <label>পাসওয়ার্ড:</label>
         <input type="password" id="loginPass" required placeholder="******">
       </div>
       <button type="submit" class="btn-blue">লগইন করুন</button>
@@ -672,7 +676,7 @@
         
         <div class="form-group">
           <label>Adsterra Direct Link (ঐচ্ছিক):</label>
-          <input type="url" id="videoAdUrl">
+          <input type="text" id="videoAdUrl" placeholder="https://...">
         </div>
 
         <!-- পর্বসমূহ -->
@@ -713,16 +717,14 @@
       <form id="adForm">
         <div class="form-group">
           <label>Direct Link:</label>
-          <input type="url" id="adUrl">
+          <input type="text" id="adUrl" placeholder="https://...">
         </div>
         <div class="form-group">
-          <label>Direct Link বিরতি সময়সীমা:</label>
-          <select id="adInterval">
-            <option value="0">প্রতি ক্লিকেই এড দেখাবে</option>
-            <option value="5">৫ মিনিট পর পর</option>
-            <option value="15" selected>১৫ মিনিট পর পর</option>
-            <option value="30">৩০ মিনিট পর পর</option>
-          </select>
+          <label>⏱️ স্ক্রিন ক্লিক এড সময়সীমা (মিনিট):</label>
+          <input type="number" id="adInterval" value="15" min="0" step="1" placeholder="যেমন: 10, 15, 20">
+          <p class="hint">💡 সংখ্যা লিখুন — তত মিনিট পর পর স্ক্রিন ক্লিকে এড দেখাবে।<br>
+          ✅ <b>10 / 15 / 20</b> = তত মিনিট পর পর এড<br>
+          ❌ <b>0</b> দিলে = স্ক্রিন ক্লিক এড সম্পূর্ণ বন্ধ</p>
         </div>
         <div class="form-group">
           <label>Popunder Ad Code:</label>
